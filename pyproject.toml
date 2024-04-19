@@ -1,0 +1,16 @@
+[tool.poetry]
+name = "gpt4-tokens"
+version = "0.1.0"
+description = ""
+authors = ["Koen van Gilst <koen@koenvangilst.nl>"]
+license = "MIT"
+readme = "README.md"
+
+[tool.poetry.dependencies]
+python = "^3.12"
+requests = "^2.31.0"
+
+
+[build-system]
+requires = ["poetry-core"]
+build-backend = "poetry.core.masonry.api"
