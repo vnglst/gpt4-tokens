@@ -29,31 +29,35 @@ Do a linguistic analysis of each token the following tokens. Respond with only J
 
 """
 
+
 def process_tokens(tokens):
     url = "http://localhost:11434/api/generate"
 
     prompt = system_prompt + "\n" + "\n".join(tokens)
 
     data = {
-        "model": "gemma:2b",
+        "model": "llama3",
+        # "model": "gemma:2b",
         "prompt": prompt,
         "stream": False
     }
-    
-    print(f"Processing prompt: {prompt}")
+
+    print(f"Processing: {tokens}")
 
     response = requests.post(url, json=data, timeout=1000)
-    
+
     if response.status_code == 200:
         try:
-            return response.json()
+            print(f"JSON: {response.json()['response']}")
+            return response.json()['response']
         except json.JSONDecodeError as e:
             print(f"Failed to decode JSON: {e}")
             print(f"Response: {response.text}")
             return []
-    
+
     print(f"Request failed with status code {response.status_code}")
     return []
+
 
 def process_large_file(file_path, batch_size=5):
     results = {"tokens": {}}
@@ -66,10 +70,11 @@ def process_large_file(file_path, batch_size=5):
             results["tokens"].update(processed)
     return results
 
+
 def write_to_json(data, output_file):
     with open(output_file, 'w', encoding='utf-8') as file:
         json.dump(data, file, indent=4)
 
+
 tokens_batch = process_large_file('gpt-4-tokens.txt')
 write_to_json(tokens_batch, 'processed_tokens.json')
-
