@@ -1,4 +1,5 @@
 import json
+import sqlite3
 import requests
 
 
@@ -42,8 +43,8 @@ def process_tokens(tokens):
     prompt = TEMPLATE + "\n" + "\n".join(tokens)
 
     data = {
-        "model": "llama3",
-        # "model": "gemma:2b",
+        # "model": "llama3",
+        "model": "gemma:2b",
         "prompt": prompt,
         "format": "json",
         "stream": False
@@ -78,23 +79,32 @@ def process_tokens(tokens):
     print(f"Request failed with status code {response.status_code}")
     return []
 
+def process_large_file(file_path, output_file, batch_size=5):
+    conn = sqlite3.connect(output_file)
+    cursor = conn.cursor()
 
-def process_large_file(file_path, batch_size=5):
-    results = {"tokens": {}}
+    cursor.execute("""
+        CREATE TABLE IF NOT EXISTS processed_tokens (
+            id INTEGER PRIMARY KEY AUTOINCREMENT,
+            token TEXT,
+            category1 TEXT,
+            category2 TEXT,
+            category3 TEXT
+        )
+    """)
+
     with open(file_path, 'r', encoding='utf-8') as file:
         while True:
             lines = [file.readline().strip() for _ in range(batch_size)]
             if not lines[0]:
                 break
             processed = process_tokens(lines)
-            results["tokens"].update(processed)
-    return results
+            for token, categories in processed.items():
+                cursor.execute("INSERT INTO processed_tokens (token, category1, category2, category3) VALUES (?, ?, ?, ?)",
+                               (token, categories[0], categories[1] if len(categories) > 1 else None, categories[2] if len(categories) > 2 else None))
+            conn.commit()
+            print(f"Processed {len(lines)} tokens")
 
+    conn.close()
 
-def write_to_json(data, output_file):
-    with open(output_file, 'w', encoding='utf-8') as file:
-        json.dump(data, file, indent=4)
-
-
-tokens_batch = process_large_file('gpt-4-tokens.txt')
-write_to_json(tokens_batch, 'processed_tokens.json')
+process_large_file('gpt-4-tokens.txt', 'processed_tokens.db')
