@@ -1,6 +1,5 @@
 import json
 import requests
-import json
 
 
 TEMPLATE = """
@@ -32,7 +31,7 @@ Output:
 }
 ```
 
-Do a linguistic analysis of each token the following tokens. Respond with only JSON. Make sure the JSON is valid.
+Do a linguistic analysis of each token the following tokens. Respond with only JSON. Make sure the JSON is valid. Do not add back ticks, like ```.
 
 """
 
@@ -43,9 +42,10 @@ def process_tokens(tokens):
     prompt = TEMPLATE + "\n" + "\n".join(tokens)
 
     data = {
-        # "model": "llama3",
-        "model": "gemma:2b",
+        "model": "llama3",
+        # "model": "gemma:2b",
         "prompt": prompt,
+        "format": "json",
         "stream": False
     }
 
@@ -56,20 +56,20 @@ def process_tokens(tokens):
     if response.status_code == 200:
         try:
             json_response = response.json()
-            
+
             try:
                 result = json.loads(json_response['response'])
                 if isinstance(result, dict):
                     # print(f"Result: {result}")
                     return result
-                
+
                 print(f"Unexpected result type: {type(result)}")
-            
+
             except json.JSONDecodeError as e:
                 print(f"Failed to decode LLM response JSON: {e}")
                 print(f"Response: {json_response['response']}")
                 return []
-            
+
         except json.JSONDecodeError as e:
             print(f"Failed to decode JSON: {e}")
             print(f"Response: {response.text}")
