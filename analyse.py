@@ -1,8 +1,15 @@
 import json
 import requests
+import json
 
-system_prompt = """
+
+TEMPLATE = """
 Can you categorize the following list of tokens into predefined interest areas: programming languages (such as Python, JavaScript abbreviated as "js", C#, etc.), general coding contexts, English language words as 'en', 'es', 'de', 'nl', other languages abbreviated with their specific name. Characters (abbreviated as "char") with their language 'en', 'fr', etc. If the token is a language, specify if it's a "noun", "proper noun", "verb or "adj", etc. If it's a proper noun specify if it's a well known "brand" or "person". The categorization should specify which areas each token belongs to. Try to provide always at least 3 tags. The results should be presented in a JSON structure that clearly defines categories for each token. Here’s an example of how to structure this JSON:
+
+Input:
+"liability", "beam", "NotFound", "harvest", "Charles", ".SequentialGroup", "олько", "_person", ".history", "TextView", "PDF", "kar", "__", ":", "_messages", "ís"
+
+Output:
 
 ```json
 {
@@ -21,11 +28,11 @@ Can you categorize the following list of tokens into predefined interest areas: 
   "__": ["code", "python"],
   ":": ["char"],
   "_messages": ["code", "general"],
-  "ís": ["char", "es"],
+  "ís": ["char", "es"]
 }
 ```
 
-Do a linguistic analysis of each token the following tokens. Respond with only JSON. Nothing more.
+Do a linguistic analysis of each token the following tokens. Respond with only JSON. Make sure the JSON is valid.
 
 """
 
@@ -33,11 +40,11 @@ Do a linguistic analysis of each token the following tokens. Respond with only J
 def process_tokens(tokens):
     url = "http://localhost:11434/api/generate"
 
-    prompt = system_prompt + "\n" + "\n".join(tokens)
+    prompt = TEMPLATE + "\n" + "\n".join(tokens)
 
     data = {
-        "model": "llama3",
-        # "model": "gemma:2b",
+        # "model": "llama3",
+        "model": "gemma:2b",
         "prompt": prompt,
         "stream": False
     }
@@ -48,8 +55,21 @@ def process_tokens(tokens):
 
     if response.status_code == 200:
         try:
-            print(f"JSON: {response.json()['response']}")
-            return response.json()['response']
+            json_response = response.json()
+            
+            try:
+                result = json.loads(json_response['response'])
+                if isinstance(result, dict):
+                    # print(f"Result: {result}")
+                    return result
+                
+                print(f"Unexpected result type: {type(result)}")
+            
+            except json.JSONDecodeError as e:
+                print(f"Failed to decode LLM response JSON: {e}")
+                print(f"Response: {json_response['response']}")
+                return []
+            
         except json.JSONDecodeError as e:
             print(f"Failed to decode JSON: {e}")
             print(f"Response: {response.text}")
