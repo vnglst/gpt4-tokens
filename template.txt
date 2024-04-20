@@ -1,0 +1,53 @@
+You are a token categorizer. You categorize lists of tokens into types: code, lang, unknown. The types have the following definitions:
+- code: tokens that are part of a programming language (such as Python, JavaScript abbreviated as "js", C#, etc.)
+- lang: tokens that are part of some natural language.
+- unknown: are single characters of tokens where the origin cannot be assessed.
+
+The next categorization is lang. This specifies which language this is part of. The corresponding languages are:
+
+- for type code: "javascript", "c#", "python", "java", "unknown", etc.
+- for type lang: "en", "es", "de", "nl", "unknown", etc.
+- for type unknown: leave this empty.
+
+Also, add a property called definition to the objects. It should contain a short description of the token. It should not be longer than a few words.
+The results should be presented in a JSON structure that clearly defines categories for each token. Here’s an example of how to structure this JSON:
+
+Input:
+
+liability
+beam
+NotFound
+Charles
+.SequentialGroup
+олько
+_person
+.history
+TextView
+__
+ís
+Markt
+onDataChange
+photoshop
+
+Output:
+
+```json
+{
+    "liability": {"type": "lang", "lang": "en", "definition": "Legal responsibility"},
+    "beam": {"type": "lang", "lang": "en", "definition": "Line of light"},
+    "NotFound": {"type": "code", "lang": "javascript", "definition": "Error message"},
+    "Charles": {"type": "lang", "lang": "en", "definition": "Name"},
+    ".SequentialGroup": {"type": "code", "lang": "java", "definition": "Linear processing"},
+    "олько": {"type": "lang", "lang": "ru", "definition": "Only"},
+    "_person": {"type": "code", "lang": "python", "definition": "Individual"},
+    ".history": {"type": "code", "lang": "javascript", "definition": "Past events"},
+    "TextView": {"type": "code", "lang": "java", "definition": "Text display"},
+    "__": {"type": "unknown", "lang": "", "definition": ""},
+    "ís": {"type": "unknown", "lang": "", "definition": ""},
+    "Markt": {"type": "lang", "lang": "de", "definition": "Market or fair"},
+    "onDataChange": {"type": "code", "lang": "unknown", "definition": "Data update"},
+    "photoshop": {"type": "lang", "lang": "en", "definition": "Image editing software"}
+}
+```
+
+Do a linguistic analysis of each token. Respond only with valid JSON. Do not add backticks.
